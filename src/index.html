@@ -1,10 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title><%= htmlWebpackPlugin.options.title %></title>
-</head>
-<body>
-	<p>Document</p>
-</body>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>MAP</title>
+    <!-- Replace the value of the key parameter with your own API key. -->
+    <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
+
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAsjUjLP-7PdFUwGrKJtW5hUUZi81MHjVM" async defer></script>
+  </head>
+  <body>
+  	<div class="container">
+  		<button class="showRegion" data="Europe">Europe</button>
+  		<div id="map"></div>
+  	</div>
+  </body>
+  <style>
+  	#map {
+  		height: 100%;
+  	}
+  	/* Optional: Makes the sample page fill the window. */
+  	html, body {
+  		height: 100%;
+  		margin: 0;
+  		padding: 0;
+  	}
+  	.container {
+  		width: 1000px;
+  		height: 70%;
+  		margin: 100px auto;
+  	}
+  </style>
 </html>
+

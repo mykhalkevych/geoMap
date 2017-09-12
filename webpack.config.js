@@ -1,6 +1,8 @@
 const path = require('path');
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
 	entry: './src/js/main.js',
@@ -10,13 +12,23 @@ module.exports = {
 	},
 	module: {
 		rules: [
-			{
-			  test: /\.(scss|sass|css)$/,
-			  use: ExtractTextPlugin.extract({
-			  	fallback: 'style-loader',
-          use: ['css-loader','sass-loader'],
-			  })
+		{
+			test: /\.js$/,
+			exclude: /(node_modules|bower_components)/,
+			use: {
+				loader: 'babel-loader',
+				options: {
+					presets: ['env']
+				}
 			}
+		},
+		{
+			test: /\.(scss|sass|css)$/,
+			use: ExtractTextPlugin.extract({
+				fallback: 'style-loader',
+				use: ['css-loader','sass-loader'],
+			})
+		}
 		]
 	},
 	devServer: {
@@ -27,14 +39,24 @@ module.exports = {
 	},
 	plugins: [
 		new HtmlWebpackPlugin({
-		title: 'Site',
-		template: './src/index.html'
-	}),
+			title: 'Site',
+			template: './src/index.html'
+		}),
 		new ExtractTextPlugin(
+		{
+			filename: './css/style.css',
+			disable: false,
+			allChunks: true
+		}),
+		new webpack.ProvidePlugin({
+			$: 'jquery',
+			jQuery: 'jquery'
+		}),
+		new CopyWebpackPlugin([
 			{
-				filename: './css/style.css',
-				disable: false,
-				allChunks: true
-			}),
+				from: path.resolve(__dirname, 'src/assets/'),
+				to: path.resolve(__dirname, 'build/assets'),
+			}
+		])
 	]
 }

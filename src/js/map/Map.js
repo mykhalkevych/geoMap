@@ -31,6 +31,9 @@ class GeoMap {
   hightLightRegion(region) {
     region.setMap(this.map);
   }
+  hideHightLightRegion(region) {
+    region.setMap(null);
+  }
   getRegionCoords(region, geoData) {
     let regions = []
     geoData.features.map(country => {
@@ -50,6 +53,33 @@ class GeoMap {
     return regions;
   }
 
+
+  getCountries(list, geoData) {
+    let countries = [];
+    geoData.features.map(country => {
+      if (!!~(list.indexOf(country.id))) {
+        countries.push(country);
+      }
+    })
+    return countries;
+  }
+
+  getCountryCoordinats(country) {
+    let coords = country.geometry.coordinates;
+    let pathType = country.geometry.type
+
+    if (pathType === 'Polygon') {
+      coords = coords.reduce((prev, current) => {
+        return [...prev, ...current];
+      })
+    } else {
+      coords = coords.reduce((prev, current) => {
+        return [...prev, ...current];
+      })
+    }
+    return coords;
+  }
+
   getPolygonPath(coordinates) {
     let path = [];
     coordinates.map(p => {
@@ -59,6 +89,13 @@ class GeoMap {
     return path;
   }
 
+}
+
+export class PolygonOption {
+  constructor(paths, options) {
+    this.paths = paths;
+    Object.assign(this, options)
+  }
 }
 
 export default GeoMap

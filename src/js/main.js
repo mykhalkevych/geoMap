@@ -3,6 +3,7 @@ const sass = require('../sass/main.scss');
 
 import Promise from 'bluebird'
 import GeoMap from './map/Map.js';
+import {PolygonOption} from './map/Map.js';
 
 function readFile(filePath) {
  return new Promise((resolve, reject) => {
@@ -28,7 +29,10 @@ window.onload = function () {
     let stylesMap;
     let mapOptions = {
       center: new google.maps.LatLng(0, 0),
-      zoom: 2
+      zoom: 2,
+      disableDefaultUI: true,
+      zoomControl: true,
+      draggable: false
     }
     let clusteringOptions = {
       imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
@@ -64,12 +68,19 @@ window.onload = function () {
     ]
 
     let polygonOptions= {
-      paths: '',
       strokeColor: '#e7eaec',
       strokeOpacity: 1,
       strokeWeight: 1,
       fillColor: '#498596',
       fillOpacity: 0.8
+    }
+
+    let pOpt = new PolygonOption('asdfsdaf', polygonOptions)
+    console.log('pOpt', pOpt)
+
+    let continents = {
+      'europe': ['UKR', 'DEU', 'ESP', 'CZE'],
+      'africa': ['ZAF', 'EGY', 'USA']
     }
 
     readFile('./assets/map/mapStyle.json')
@@ -79,16 +90,54 @@ window.onload = function () {
         geoMap.setMarkers(locations, labels)
         geoMap.createClustering(clusteringOptions)
     })
-    readFile('./assets/map/countries.json')
-      .then(res => {
-        console.log('countries', res)
-        let countriesPath = geoMap.getRegionCoords('oceania', res)
+    let hightLigthRegion = {}
+
+    $(document).on('click', '.showRegion', function(e){
+      let region = $(this).data('region')
+      let isActive = $(this).data('active')
+      $(this).data('active', !($(this).data('active')))
+      console.log(isActive)
+      let countries = continents[region]
 
 
-
-        polygonOptions.paths = geoMap.getPolygonPath(countriesPath[1])
-        console.log('polygonOptions', countriesPath)
-        let d = geoMap.setHightLigthRegion(polygonOptions)
-        geoMap.hightLightRegion(d)
+      var triangleCoords = [
+        new google.maps.LatLng(34.9226, 29.50133),
+        new google.maps.LatLng(34.64174, 26.09942),
+        new google.maps.LatLng(36.42655, 28.34399),
+        new google.maps.LatLng(35.7734, 30.96746),
+        new google.maps.LatLng(34.9226, 29.50133)
+      ];
+      var triangleCoords1 = [
+        new google.maps.LatLng(56.9226, 23.50133),
+        new google.maps.LatLng(56.64174, 23.09942),
+        new google.maps.LatLng(36.42655, 23.56399),
+        new google.maps.LatLng(23.7756, 30.96746),
+        new google.maps.LatLng(3.9226, 54.50133)
+      ];
+      var triangleCoords2 = [
+        new google.maps.LatLng(34.9226, 29.50133),
+        new google.maps.LatLng(34.64174, 26.09942),
+        new google.maps.LatLng(36.42655, 28.34399),
+        new google.maps.LatLng(35.7734, 30.96746),
+        new google.maps.LatLng(34.9226, 29.50133)
+      ];
+      readFile('./assets/map/countries.json')
+      .then(data => {
+        let regionCountries = geoMap.getCountries(countries, data)
+        console.log('regionCountries', regionCountries)
+        let regionsPath = []
+        regionCountries.map((country, i) => {
+          let countryCoords = geoMap.getCountryCoordinats(country)
+          let path = geoMap.getPolygonPath(countryCoords)
+          regionsPath.push(path)
+        })
+        let drawOptions = new PolygonOption(regionsPath , polygonOptions)
+        if (isActive) {
+          hightLigthRegion[region] = geoMap.setHightLigthRegion(drawOptions)
+          geoMap.hightLightRegion(hightLigthRegion[region])
+        } else {
+          geoMap.hideHightLightRegion(hightLigthRegion[region])
+        }
       })
+    })
   }

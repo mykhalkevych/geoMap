@@ -1,10 +1,8 @@
 
-
 class GeoMap {
 
   constructor () {
     this.map = null;
-    this.markers = [];
   }
 
   initMap (el, options) {
@@ -12,7 +10,7 @@ class GeoMap {
   }
 
   setMarkers (locations, labels) {
-    this.markers = locations.map(function(location, i) {
+    return locations.map(function(location, i) {
       return new google.maps.Marker({
         position: location,
         label: labels[i % labels.length]
@@ -20,21 +18,32 @@ class GeoMap {
     });
   }
 
-  createClustering (options) {
-    new MarkerClusterer(this.map, this.markers, options)
+  hideMarkers (markers) {
+    markers.map(marker => {
+        marker.setMap(null);
+    })
+  }
+
+  createClustering (options, markers) {
+    return new MarkerClusterer(this.map, markers, options);
+  }
+
+  hideClustering(cluster) {
+    console.log(cluster)
+    cluster.setMap(null);
   }
 
   setHightLigthRegion(options) {
     return new google.maps.Polygon(options);
   }
 
-  hightLightRegion(region) {
+  hightLightRegion (region) {
     region.setMap(this.map);
   }
-  hideHightLightRegion(region) {
+  hideHightLightRegion (region) {
     region.setMap(null);
   }
-  getRegionCoords(region, geoData) {
+  getRegionCoords (region, geoData) {
     let regions = []
     geoData.features.map(country => {
       let coords = country.geometry.coordinates;
@@ -54,7 +63,7 @@ class GeoMap {
   }
 
 
-  getCountries(list, geoData) {
+  getCountries (list, geoData) {
     let countries = [];
     geoData.features.map(country => {
       if (!!~(list.indexOf(country.id))) {
@@ -64,7 +73,7 @@ class GeoMap {
     return countries;
   }
 
-  getCountryCoordinats(country) {
+  getCountryCoordinats (country) {
     let coords = country.geometry.coordinates;
     let pathType = country.geometry.type
 

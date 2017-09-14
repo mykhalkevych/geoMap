@@ -36,8 +36,8 @@ window.onload = function () {
     }
     let clusteringOptions = {
       imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
-      maxZoom: 4,
-      minimumClusterSize: 5
+      maxZoom: 2,
+      minimumClusterSize: 2
     }
     let labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -79,8 +79,24 @@ window.onload = function () {
     console.log('pOpt', pOpt)
 
     let continents = {
-      'europe': ['UKR', 'DEU', 'ESP', 'CZE'],
-      'africa': ['ZAF', 'EGY', 'USA']
+      'europe': {
+        countries: ['UKR', 'DEU', 'ESP', 'CZE', 'SVK', 'FIN'],
+        locations: [
+          {lat: 49.626, lng: 10.006},
+          {lat: 52.067, lng: 13.170},
+          {lat: 38.292, lng: -3.002},
+          {lat: 48.938, lng: 36.900},
+          {lat: 49.740, lng: 15.103}
+        ]
+      },
+      'africa': {
+        countries: ['ZAF', 'EGY'],
+        locations: [
+          {lat: 23.908, lng: 29.342},
+          {lat: 25.822, lng: 27.057},
+          {lat: -26.094, lng: 29.518}
+        ]
+      }
     }
 
     readFile('./assets/map/mapStyle.json')
@@ -90,53 +106,45 @@ window.onload = function () {
         geoMap.setMarkers(locations, labels)
         geoMap.createClustering(clusteringOptions)
     })
-    let hightLigthRegion = {}
+    let activeContinents = {
+      'europe': {},
+      'africa': {}
+    }
+
+    function showContinent (continent, region, options) {
+      continent.hightLight = geoMap.setHightLigthRegion(options)
+      geoMap.hightLightRegion(continent.hightLight)
+      continent.markers = geoMap.setMarkers(continents[region].locations, labels)
+      continent.cluster = geoMap.createClustering(clusteringOptions, continent.markers)
+    }
+
+    function hideContinent (continent) {
+      geoMap.hideHightLightRegion(continent.hightLight)
+      geoMap.hideMarkers(continent.markers)
+      geoMap.hideClustering(continent.cluster)
+    }
 
     $(document).on('click', '.showRegion', function(e){
       let region = $(this).data('region')
       let isActive = $(this).data('active')
       $(this).data('active', !($(this).data('active')))
       console.log(isActive)
-      let countries = continents[region]
-
-
-      var triangleCoords = [
-        new google.maps.LatLng(34.9226, 29.50133),
-        new google.maps.LatLng(34.64174, 26.09942),
-        new google.maps.LatLng(36.42655, 28.34399),
-        new google.maps.LatLng(35.7734, 30.96746),
-        new google.maps.LatLng(34.9226, 29.50133)
-      ];
-      var triangleCoords1 = [
-        new google.maps.LatLng(56.9226, 23.50133),
-        new google.maps.LatLng(56.64174, 23.09942),
-        new google.maps.LatLng(36.42655, 23.56399),
-        new google.maps.LatLng(23.7756, 30.96746),
-        new google.maps.LatLng(3.9226, 54.50133)
-      ];
-      var triangleCoords2 = [
-        new google.maps.LatLng(34.9226, 29.50133),
-        new google.maps.LatLng(34.64174, 26.09942),
-        new google.maps.LatLng(36.42655, 28.34399),
-        new google.maps.LatLng(35.7734, 30.96746),
-        new google.maps.LatLng(34.9226, 29.50133)
-      ];
+      let countries = continents[region].countries;
       readFile('./assets/map/countries.json')
       .then(data => {
         let regionCountries = geoMap.getCountries(countries, data)
         console.log('regionCountries', regionCountries)
         let regionsPath = []
-        regionCountries.map((country, i) => {
+        regionCountries.map(country => {
           let countryCoords = geoMap.getCountryCoordinats(country)
           let path = geoMap.getPolygonPath(countryCoords)
           regionsPath.push(path)
         })
         let drawOptions = new PolygonOption(regionsPath , polygonOptions)
         if (isActive) {
-          hightLigthRegion[region] = geoMap.setHightLigthRegion(drawOptions)
-          geoMap.hightLightRegion(hightLigthRegion[region])
+          showContinent(activeContinents[region], region, drawOptions);
         } else {
-          geoMap.hideHightLightRegion(hightLigthRegion[region])
+          hideContinent(activeContinents[region]);
         }
       })
     })
